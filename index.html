@@ -3,10 +3,29 @@
 <head>
   <meta charset="utf-8">
 <style>
-@import url('https://fonts.googleapis.com/css?family=Anonymous+Pro');
 
-.time {
-    font-family: 'Anonymous Pro', sans-serif;    
+@font-face {
+  font-family: 'time_display';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Anonymous Pro Regular'), local('AnonymousPro-Regular'), url(https://fonts.gstatic.com/s/anonymouspro/v11/rP2Bp2a15UIB7Un-bOeISG3pHls28wP-4Ks.woff) format('woff');
+  unicode-range: U+0030-0039;
+}
+
+@font-face {
+  font-family: 'time_display';
+  font-style: normal;
+  src: local('sans-serif');
+  unicode-range: U+0000-002F, U+003A-FFFF;
+}
+
+#time_display {
+    font-family: 'time_display';
+    width: 100vw;
+    height: 100vh;
+    text-align: center;
+
+    margin: auto;
 }
 
 .no_classes {
@@ -37,7 +56,7 @@
 }
 
 .showing_two_digits {
-    font-size: 80vw;
+    font-size: 50vw;
 }
 
 .showing_three_digits {
@@ -80,10 +99,8 @@
 
 </style>
 </head>
-<body class='insession showing_loading'>
-<div style="text-align: center; position: relative; top: -.25em">
-<span style="width="100%" id="time_display">loading...</span>
-</div>
+<body>
+<div class="insession showing_loading" id="time_display">loading...</div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 
 <script>
@@ -141,16 +158,11 @@ function seconds(future_time) {
     return Math.floor(((future_time.getTime() - Date.now()) % one_minute) / one_second);
 }
 
-function change_body_class(class_name) {
-    $(document.body).removeClass();
-    $(document.body).addClass(class_name);
-}
-
 function change_body_classes(class_names) {
-    $(document.body).removeClass();
+    $('#time_display').removeClass();
     var arrayLength = class_names.length;
     for (var i = 0; i < arrayLength; i++) {
-        $(document.body).addClass(class_names[i]);
+        $('#time_display').addClass(class_names[i]);
     }
 }
 
@@ -179,7 +191,7 @@ function build_time_string(hours, minutes, seconds, show_hours, show_seconds) {
     if (show_hours && hours > 0) {
         // We assume no single session is one hundred hours or longer
         digits += hours > 9? 2: 1;
-        hours_string = '<span class=\'time\'>' + hours.toString() + '</span>:'
+        hours_string = hours.toString() + ':';
     } else {
         if (hours > 0) {
             // must not be in "show hours mode"
@@ -196,11 +208,11 @@ function build_time_string(hours, minutes, seconds, show_hours, show_seconds) {
         }
     }
     var seconds_string = ''
-    if (show_seconds || (minutes < 10)) {
-        seconds_string = ':<span class="time">' + zero_pad(seconds, 2) + '</span>'
+    if (show_seconds || (hours == 0 && minutes < 10)) {
+        seconds_string = ':' + zero_pad(seconds, 2)
         digits += 2;
     }
-    var time_string = hours_string + '<span class="time">' + zero_pad(minutes, minute_pad) + '</span>' + seconds_string
+    var time_string = hours_string + zero_pad(minutes, minute_pad) + seconds_string
     return [time_string, digits]
 }
 
