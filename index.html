@@ -9,62 +9,37 @@
   font-style: normal;
   font-weight: 400;
   src: local('Anonymous Pro Regular'), local('AnonymousPro-Regular'), url(https://fonts.gstatic.com/s/anonymouspro/v11/rP2Bp2a15UIB7Un-bOeISG3pHls28wP-4Ks.woff) format('woff');
-  unicode-range: U+0030-0039;
+  unicode-range: U+0030-0039, U+0041-005A, U+0061-007A;
 }
 
 @font-face {
   font-family: 'time_display';
   font-style: normal;
   src: local('sans-serif');
-  unicode-range: U+0000-002F, U+003A-FFFF;
+  unicode-range: U+0000-002F, U+003A-0040, U+005B-0060, U+007B-FFFF;
 }
 
-#time_display {
-    font-family: 'time_display';
+#time_display_div {
     width: 100vw;
     height: 100vh;
     text-align: center;
+}
 
-    margin: auto;
+.verticalcenter {
+    position: relative;
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+}
+
+#time_display_span {
+    font-family: 'time_display';
 }
 
 .no_classes {
     background-color: white;
     color: black;
-}
-
-.loading_text {
-    font-size: 25vw;
-}
-
-.showing_loading {
-    font-size: 25vw;
-}
-
-.showing_not_today {
-    font-size: 15vw;
-    line-height:15vw;
-}
-
-.showing_no_more {
-    font-size: 15vw;
-    line-height:15vw;
-}
-
-.showing_time {
-    font-size: 54vw;
-}
-
-.showing_two_digits {
-    font-size: 50vw;
-}
-
-.showing_three_digits {
-    font-size: 54vw;
-}
-
-.showing_four_digits {
-    font-size: 42vw;
 }
 
 .between_sessions {
@@ -100,7 +75,11 @@
 </style>
 </head>
 <body>
-<div class="insession showing_loading" id="time_display">loading...</div>
+<div class="insession showing_loading" id="time_display_div">
+    <div class="verticalcenter">
+        <span id="time_display_span">loading...</span>
+    </div>
+</div>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 
 <script>
@@ -119,6 +98,28 @@ function bool_param(name, default_value) {
         return false;
     } else {
         return default_value;
+    }
+}
+
+function effective_fraction(span, div) {
+    var x = span.width() / div.width();
+    var y = span.height() / div.height();
+    return Math.max(x, y);
+}
+
+function update_display(msg) {
+    // Change the text of the time display, and massage the font size until it fills the screen.
+    var div = $('#time_display_div');
+    var span = $('#time_display_span');
+    var font_size = parseInt(span.css('font-size'));
+    span.text(msg);
+    while (effective_fraction(span, div) < 0.90) {
+        font_size += 10;
+        span.css('font-size', font_size + 'px');
+    }
+    while (effective_fraction(span, div) > 0.90) {
+        font_size -= 2;
+        span.css('font-size', font_size + 'px');
     }
 }
 
@@ -159,16 +160,16 @@ function seconds(future_time) {
 }
 
 function change_body_classes(class_names) {
-    $('#time_display').removeClass();
+    $('#time_display_div').removeClass();
     var arrayLength = class_names.length;
     for (var i = 0; i < arrayLength; i++) {
-        $('#time_display').addClass(class_names[i]);
+        $('#time_display_div').addClass(class_names[i]);
     }
 }
 
-function no_sessions_today(why) {
+function no_sessions_today(msg) {
     change_body_classes(['no_classes', 'showing_not_today']);
-    $('#time_display').text(why);
+    update_display(msg);
 }
 
 function flash_background(body_class, showing_class) {
@@ -230,7 +231,7 @@ function count_down(deadline, default_body_class, body_class_minutes, periodic_f
         }
     }
     [time_string, digits_shown] = build_time_string(the_hours, the_minutes, the_seconds, show_hours, show_seconds);
-    $('#time_display').html(time_string);
+    update_display(time_string);
     showing_class = 'showing_two_digits'
     switch (digits_shown) {
         case 3:
@@ -270,7 +271,7 @@ function in_session(session_end, show_hours, show_seconds) {
 
 function no_more_sessions() {
     change_body_classes(['no_classes', 'showing_no_more']);
-    $('#time_display').html('<span style="line-height: 15vw;">-30-<br />the end</span>');
+    update_display('the end');
     window.clearInterval(interval_ID);
 }
 
@@ -326,17 +327,57 @@ function get_sessions(json_data, track) {
     return sessions;
 }
 
+function make_custom_session(endDate) {
+    return [{
+        begin: new Date(),
+        end: endDate,
+    }];
+}
+
 function cors_proxy(url) {
     // return 'https://www.whateverorigin.org/get?url=' + encodeURIComponent(url) + '&callback=?';
     // return 'https://anyorigin.com/go?url=' + encodeURIComponent(url) + '&callback=?';
     return 'https://allorigins.me/get?url=' + encodeURIComponent(url) + '&callback=?';
 }
 
-$.getJSON(cors_proxy(param('json')), function(data) {
-    var json_data = JSON.parse(data.contents);
-    sessions = get_sessions(json_data, param('track'));
-    interval_ID = window.setInterval(update_screen, 1000)
-});
+update_display('loading...');
+if (param('json') !== '') {
+    $.getJSON(cors_proxy(param('json')), function (data) {
+        try {
+            var json_data = JSON.parse(data.contents);
+            sessions = get_sessions(json_data, param('track'));
+            interval_ID = window.setInterval(update_screen, 1000);
+        } catch (ex) {
+            no_sessions_today('error loading JSON from ' + param('json'), ex);
+        }
+    });
+} else if (param('end') !== '') {
+    try {
+        var end_time = new Date(param('end'));
+        sessions = make_custom_session(end_time);
+        interval_ID = window.setInterval(update_screen, 1000);
+    } catch (ex) {
+        no_sessions_today('error parsing date ' + param('end'), ex);
+    }
+} else if (param('duration') !== '') {
+    try {
+        var duration = param('duration');
+        var end_time = new Date();
+        if (duration.endsWith('h')) {
+            end_time.setTime(end_time.getTime() + (parseFloat(duration) * one_hour));
+        } else if (duration.endsWith('s')) {
+            end_time.setTime(end_time.getTime() + (parseFloat(duration) * one_second));
+        } else {
+            end_time.setTime(end_time.getTime() + (parseInt(duration) * one_minute));
+        }
+        sessions = make_custom_session(end_time);
+        interval_ID = window.setInterval(update_screen, 1000);
+    } catch (ex) {
+        no_sessions_today('error parsing duration ' + param('duration'), ex);
+    }
+} else {
+    no_sessions_today('must provide `json` or `end` parameter');
+}
 
 </script>
 
