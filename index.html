@@ -75,7 +75,7 @@
 </style>
 </head>
 <body>
-<div class="insession showing_loading" id="time_display_div">
+<div id="time_display_div">
     <div class="verticalcenter">
         <span id="time_display_span">loading...</span>
     </div>
@@ -168,30 +168,22 @@ function change_body_classes(class_names) {
 }
 
 function no_sessions_today(msg) {
-    change_body_classes(['no_classes', 'showing_not_today']);
+    change_body_classes(['no_classes']);
     update_display(msg);
 }
 
-function flash_background(body_class, showing_class) {
-    change_body_classes(['no_classes', showing_class]);
-    setTimeout(function(){change_body_classes([body_class, showing_class])}, 100);
-    setTimeout(function(){change_body_classes(['no_classes', showing_class])}, 200);
-    setTimeout(function(){change_body_classes([body_class, showing_class])}, 300);
-    setTimeout(function(){change_body_classes(['no_classes', showing_class])}, 400);
-    setTimeout(function(){change_body_classes([body_class, showing_class])}, 500);
-    setTimeout(function(){change_body_classes(['no_classes', showing_class])}, 600);
-    setTimeout(function(){change_body_classes([body_class, showing_class])}, 700);
-    setTimeout(function(){change_body_classes(['no_classes', showing_class])}, 800);
-    setTimeout(function(){change_body_classes([body_class, showing_class])}, 900);
+function flash_background(body_class) {
+    for (var i = 0; i < 1000; i += 200) {
+        setTimeout(function () { change_body_classes(['no_classes']) }, i);
+        setTimeout(function () { change_body_classes([body_class]) }, i + 100);
+    }
 }
 
 function build_time_string(hours, minutes, seconds, show_hours, show_seconds) {
-    var digits = 2;
     var hours_string = ''
     var minute_pad = 2;
     if (show_hours && hours > 0) {
         // We assume no single session is one hundred hours or longer
-        digits += hours > 9? 2: 1;
         hours_string = hours.toString() + ':';
     } else {
         if (hours > 0) {
@@ -201,20 +193,16 @@ function build_time_string(hours, minutes, seconds, show_hours, show_seconds) {
         if (minutes > 99) {
             // We assume no single session is one thousand minutes or longer
             minute_pad = 3;
-            ++digits;
         }
         if (minutes < 10) {
             minute_pad = 1;
-            --digits;
         }
     }
     var seconds_string = ''
     if (show_seconds || (hours == 0 && minutes < 10)) {
         seconds_string = ':' + zero_pad(seconds, 2)
-        digits += 2;
     }
-    var time_string = hours_string + zero_pad(minutes, minute_pad) + seconds_string
-    return [time_string, digits]
+    return hours_string + zero_pad(minutes, minute_pad) + seconds_string
 }
 
 function count_down(deadline, default_body_class, body_class_minutes, periodic_flashes, show_hours, show_seconds) {
@@ -222,30 +210,17 @@ function count_down(deadline, default_body_class, body_class_minutes, periodic_f
     var the_hours = hours(deadline);
     var the_minutes = minutes(deadline);
     var the_seconds = seconds(deadline);
-    var digits_shown = undefined;
-    var time_string = undefined;
     for (var i = 0; i < body_class_minutes.length; i++) {
         if (((the_hours * 60) + the_minutes) < body_class_minutes[i].minutes) {
-            body_class = body_class_minutes[i].body_class
+            body_class = body_class_minutes[i].body_class;
             break;
         }
     }
-    [time_string, digits_shown] = build_time_string(the_hours, the_minutes, the_seconds, show_hours, show_seconds);
+    var time_string = build_time_string(the_hours, the_minutes, the_seconds, show_hours, show_seconds);
     update_display(time_string);
-    showing_class = 'showing_two_digits'
-    switch (digits_shown) {
-        case 3:
-            showing_class = 'showing_three_digits'
-            break;
-        case 4:
-            showing_class = 'showing_four_digits'
-            break;
-        default:
-            break;
-    }
-    change_body_classes([body_class, showing_class])
+    change_body_classes([body_class])
     if (periodic_flashes && (the_seconds == 0 && (the_minutes % 5) == 0)) {
-        flash_background(body_class, showing_class);
+        flash_background(body_class);
     }
 }
 
@@ -270,7 +245,7 @@ function in_session(session_end, show_hours, show_seconds) {
 }
 
 function no_more_sessions() {
-    change_body_classes(['no_classes', 'showing_no_more']);
+    change_body_classes(['no_classes']);
     update_display('the end');
     window.clearInterval(interval_ID);
 }
