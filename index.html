@@ -300,7 +300,7 @@ function get_sessions(json_data, track) {
     interval_ID = window.setInterval(update_screen, 1000)
 }
 
-$.getJSON('https://www.whateverorigin.org/get?url=' + encodeURIComponent(param('json')) + '&callback=?', function(data){
+$.getJSON('http://www.whateverorigin.org/get?url=' + encodeURIComponent(param('json')) + '&callback=?', function(data){
     get_sessions(data, param('track'));
 });
 
