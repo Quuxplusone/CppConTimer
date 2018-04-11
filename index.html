@@ -381,7 +381,7 @@ var getJSON = function(url, callback) {
     xhr.send();
 };
 
-$.getJSON('http://www.whateverorigin.org/get?url=' + encodeURIComponent(param('json')) + '&callback=?', function(data){
+$.getJSON('https://www.whateverorigin.org/get?url=' + encodeURIComponent(param('json')) + '&callback=?', function(data){
     get_sessions(data, param('track'));
 });
 
