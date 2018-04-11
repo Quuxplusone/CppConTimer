@@ -53,7 +53,7 @@ The timer service is invoked in one of these forms.
 
 ## Conference Mode
 
-- https://quuxplusone.github.io/CppConTimer/index.html?track=B&json=...
+- [https://quuxplusone.github.io/CppConTimer/index.html?track=B&json=...](https://quuxplusone.github.io/CppConTimer/index.html?track=B&json=https://raw.githubusercontent.com/Quuxplusone/CppConTimer/master/CppCon2018.json)
 
 where:
 
