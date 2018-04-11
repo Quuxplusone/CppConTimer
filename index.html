@@ -89,7 +89,20 @@
 <script>
 
 function param(name) {
+    // Returns an empty string if the named parameter has not been provided.
+    // Incorrectly returns param('x') == 'y' for 'foo?wx=y'.
     return (location.search.split(name + '=')[1] || '').split('&')[0];
+}
+
+function bool_param(name, default_value) {
+    var value = param(name);
+    if (value == 'true' || value == 'yes' || value == '1') {
+        return true;
+    } else if (value == 'false' || value == 'no' || value == '0') {
+        return false;
+    } else {
+        return default_value;
+    }
 }
 
 //Get 1 day in milliseconds
@@ -250,8 +263,8 @@ function no_more_sessions() {
 }
 
 function update_screen() {
-    show_hours = param('h') || false;
-    show_seconds = param('s') || false;
+    show_hours = bool_param('show_hours', false);
+    show_seconds = bool_param('show_seconds', false);
     for (var i = 0, len = sessions.length; i < len; i++) {
         if (Date.now() < sessions[i].begin.getTime()) {
             var difference_ms = sessions[i].begin.getTime() - Date.now();
@@ -274,6 +287,7 @@ function update_screen() {
 
 function get_sessions(json_data, track) {
     var arrayLength = json_data.length;
+    var sessions = [];
     for (var i = 0; i < arrayLength; i++) {
         if (track != "" && json_data[i].hasOwnProperty("tracks")) {
             if (json_data[i]["tracks"].indexOf(track) < 0) {
@@ -297,7 +311,7 @@ function get_sessions(json_data, track) {
         session.end = endDate;
         sessions.push(session);
     }
-    interval_ID = window.setInterval(update_screen, 1000)
+    return sessions;
 }
 
 function cors_proxy(url) {
@@ -307,7 +321,9 @@ function cors_proxy(url) {
 }
 
 $.getJSON(cors_proxy(param('json')), function(data) {
-    get_sessions(data, param('track'));
+    var json_data = JSON.parse(data.contents);
+    sessions = get_sessions(json_data, param('track'));
+    interval_ID = window.setInterval(update_screen, 1000)
 });
 
 </script>
