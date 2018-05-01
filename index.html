@@ -351,7 +351,8 @@ if (param('json') !== '') {
         no_sessions_today('error parsing duration ' + param('duration'), ex);
     }
 } else {
-    no_sessions_today('must provide `json` or `end` parameter');
+    no_sessions_today('redirecting...');
+    window.location.replace('https://github.com/Quuxplusone/CppConTimer#url');
 }
 
 </script>
