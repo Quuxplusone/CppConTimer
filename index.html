@@ -309,18 +309,23 @@ function make_custom_session(endDate) {
     }];
 }
 
-function cors_proxy(url) {
+function cors_proxy(url, callback) {
     // return 'https://www.whateverorigin.org/get?url=' + encodeURIComponent(url) + '&callback=?';
     // return 'https://anyorigin.com/go?url=' + encodeURIComponent(url) + '&callback=?';
-    return 'https://allorigins.me/get?url=' + encodeURIComponent(url) + '&callback=?';
+    // return 'https://allorigins.me/get?url=' + encodeURIComponent(url) + '&callback=?';
+    var cors_url = 'https://proxy.iplayif.com/proxy/?encode=base64&url=' + encodeURIComponent(url) + '&callback=?';
+    $.getJSON(cors_url, function (data) {
+        var json = atob(data);  // Base64-decode the data received from proxy.iplayif.com
+        callback(json);
+    });
 }
 
 update_display('loading...');
 if (param('json') !== '') {
-    $.getJSON(cors_proxy(param('json')), function (data) {
+    cors_proxy(param('json'), function (json) {
         try {
-            var json_data = JSON.parse(data.contents);
-            sessions = get_sessions(json_data, param('track'));
+            var data = JSON.parse(json);
+            sessions = get_sessions(data, param('track'));
             interval_ID = window.setInterval(update_screen, 1000);
         } catch (ex) {
             no_sessions_today('error loading JSON from ' + param('json'), ex);
