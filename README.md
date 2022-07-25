@@ -2,7 +2,7 @@
 
 A full-screen countdown timer for conference presenters.
 
-https://quuxplusone.github.com/CppConTimer
+https://quuxplusone.github.io/CppConTimer
 
 Original version by Jon Kalb.  
 Fully-client-side version by Arthur O'Dwyer.
