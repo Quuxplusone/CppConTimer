@@ -265,13 +265,17 @@ function update_screen() {
             }
         } else {
             if (Date.now() < sessions[i].end.getTime()) {
-                in_session(sessions[i].end, show_hours, show_seconds);
+                if (bool_param('class', false)) {
+                    count_down(sessions[i].end, "late", [], false, true, true);
+                } else {
+                    in_session(sessions[i].end, show_hours, show_seconds);
+                }
                 return;
             }
         }
     }
     no_more_sessions();
- }
+}
 
 function get_sessions(json_data, track) {
     var arrayLength = json_data.length;

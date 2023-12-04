@@ -91,3 +91,8 @@ By default, the time is not shown with seconds (until the time remaining is less
 than ten minutes), but can optionally do so.
 Enable it by adding `&show_seconds=true` to your URL.
 
+## Class Mode
+
+In "class mode" the timer always displays hours and seconds, is always in yellow
+on black (no color changes), and omits the flashing at five-minute intervals.
+Enable it by adding `&class=true` to your URL.
